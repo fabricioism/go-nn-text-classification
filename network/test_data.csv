@@ -1,0 +1,15 @@
+x,y
+muy buenos días,(greeting)
+hola! buenas tardes,(greeting)
+su comida es muy buena,(liked)
+me gusta su pizza,(liked)
+estuvo super horrible,(disliked)
+su pizza es tan horrible,(disliked)
+quiero una pizza,"(food,order,pizza)"
+quiero ordenar pizza,"(food,order,pizza)"
+deme una hamburguesa porfavor,"(food,order,hamburger)"
+quiero comprar una hamburguesa,"(food,order,hamburger)"
+una ensalada porfa,"(food,order,salad) "
+vendame una ensalada porfavor,"(food,order,salad) "
+quiero una gaseosa,"(food,order,soda)"
+quiero un refresco,"(food,order,soda)"
