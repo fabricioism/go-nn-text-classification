@@ -12,8 +12,8 @@ func main() {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Get("/v1/bot", func(w http.ResponseWriter, r *http.Request) {
-		predict := net.Predict("hola")
+		predict := net.Predict("quiero ordenar una pizza")
 		w.Write([]byte(predict))
 	})
-	http.ListenAndServe(":3000", r)
+	http.ListenAndServe("0.0.0.0:3000", r)
 }
