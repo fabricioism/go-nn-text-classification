@@ -2,6 +2,8 @@ package utils
 
 import utils "github.com/fabricioism/go-text-classification/utils/str"
 
+// This function takes a slice and a string,
+// and tell us if slice contains that string
 func SliceContains(s []string, str string) bool {
 	for _, value := range s {
 		if value == str {
@@ -11,6 +13,9 @@ func SliceContains(s []string, str string) bool {
 	return false
 }
 
+// This function takes a slice of strings
+// and returns that slice with cleaning data
+// avoiding special characters...
 func CleanSlice(words []string) []string {
 	var cleanWords []string
 
