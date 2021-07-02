@@ -10,24 +10,17 @@ import (
 	str "github.com/fabricioism/go-text-classification/utils/str"
 )
 
-// defines a trained neural network.
 type data struct {
 	words   []string
 	classes []string
 	ignore  []string
 }
 
+// This function takes a file
+// and read file and returns matrices with 0's and 1's
+// We model the file.
 func loadData(file *os.File) ([]string, []string) {
-	// os.Open() opens specific file in
-	// read-only mode and this return
-	// a pointer of type os.
-	// file, err := os.Open("train_data.csv")
-
-	// if err != nil {
-	// 	log.Fatalf("failed to open: %v", err)
-	// }
-	// defer file.Close()
-
+	// Reading the file
 	reader := csv.NewReader(file)
 	reader.FieldsPerRecord = 2
 
@@ -37,21 +30,19 @@ func loadData(file *os.File) ([]string, []string) {
 		log.Fatal(err)
 	}
 
-	// inputsData and inputClasses will hold all the
+	// inputsData and inputClasses have
 	// float values that will eventually be
-	// used to form our matrices.
+	// used to form matrices.
 	inputsData := make([]string, 1*len(rawCSVData))
 	inputClasses := make([]string, 1*len(rawCSVData))
 
-	// inputsIndex will track the current index of
-	// inputs matrix values.
+	// inputsIndex will track the current index of inputs matrix values.
 	var inputsIndex int
 	var labelsIndex int
 
-	// Sequentially move the rows into a slice of floats.
 	for idx, record := range rawCSVData {
 
-		// Skip the header row.
+		// Skip the csv's header row
 		if idx == 0 {
 			continue
 		}
@@ -75,15 +66,21 @@ func loadData(file *os.File) ([]string, []string) {
 	return inputsData, inputClasses
 }
 
+// This functions takes a string
+// and returns a tokenize sentence
 func GetTokenizeSentence(sentence string) []string {
 	return strings.Split(sentence, " ")
 }
 
+// Here we store characters that we'll avoid
 func SymbolsToAvoid() []string {
 	symbols := []string{"?", "!", "¿", "¡"}
 	return symbols
 }
 
+// This function takes a file
+// and returns arrays with words, classes of the file.
+// We'll need this function for math computations
 func OrganizeData(file *os.File) ([]string, []string, [][]string, []string) {
 	var words, classes []string
 	symbolsToAvoid := SymbolsToAvoid()
@@ -109,7 +106,6 @@ func OrganizeData(file *os.File) ([]string, []string, [][]string, []string) {
 		}
 
 		slicedInputData = append(slicedInputData, slices.CleanSlice(tokens))
-
 	}
 
 	words = words[:len(words)-1]
@@ -118,9 +114,10 @@ func OrganizeData(file *os.File) ([]string, []string, [][]string, []string) {
 	inputClasses = inputClasses[:len(inputClasses)-1]
 
 	return words, classes, slicedInputData, inputClasses
-
 }
 
+// This functions takes a file
+// and returns data ready for computations
 func GetProcessedData(file *os.File) ([][]float64, [][]float64, int, int, []string, []string) {
 	// Bag of words
 	var bag, output []float64
@@ -153,12 +150,14 @@ func GetProcessedData(file *os.File) ([][]float64, [][]float64, int, int, []stri
 		}
 
 		outputs = append(outputs, output)
-
 	}
 
 	return trainingData, outputs, len(words), len(classes), words, classes
 }
 
+// This function takes a sentence
+// and will process that string
+// ready for computations
 func GetTestProcessedData(sentence string, words []string) []float64 {
 	var processedSentence []float64
 	slicedSentence := GetTokenizeSentence(sentence)

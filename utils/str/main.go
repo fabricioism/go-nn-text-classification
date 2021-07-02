@@ -2,6 +2,8 @@ package utils
 
 import "strings"
 
+// This function take a string and returns the string
+// avoiding special letters
 func RemoveLetters(word string) string {
 	word = strings.Replace(word, "á", "a", -1)
 	word = strings.Replace(word, "é", "e", -1)
@@ -16,6 +18,9 @@ func RemoveLetters(word string) string {
 	return word
 }
 
+// This function takes a string and returns
+// the string without special letters and
+// a lower string.
 func CleanWord(word string) string {
 	word = RemoveLetters(word)
 	return strings.ToLower(word)

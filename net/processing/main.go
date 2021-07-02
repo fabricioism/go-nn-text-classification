@@ -8,59 +8,16 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"math"
 	"math/rand"
 	"os"
 	"path/filepath"
 	"time"
 
+	functions "github.com/fabricioism/go-text-classification/net/functions"
 	pre "github.com/fabricioism/go-text-classification/net/preprocessing"
 	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/mat"
 )
-
-// sumAlongAxis sums a matrix along a
-// particular dimension, preserving the
-// other dimension.
-func sumAlongAxis(axis int, m *mat.Dense) (*mat.Dense, error) {
-
-	numRows, numCols := m.Dims()
-
-	var output *mat.Dense
-
-	switch axis {
-	case 0:
-		data := make([]float64, numCols)
-		for i := 0; i < numCols; i++ {
-			col := mat.Col(nil, i, m)
-			data[i] = floats.Sum(col)
-		}
-		output = mat.NewDense(1, numCols, data)
-	case 1:
-		data := make([]float64, numRows)
-		for i := 0; i < numRows; i++ {
-			row := mat.Row(nil, i, m)
-			data[i] = floats.Sum(row)
-		}
-		output = mat.NewDense(numRows, 1, data)
-	default:
-		return nil, errors.New("invalid axis, must be 0 or 1")
-	}
-
-	return output, nil
-}
-
-// sigmoid implements the sigmoid function
-// for use in activation functions.
-func sigmoid(x float64) float64 {
-	return 1.0 / (1.0 + math.Exp(-x))
-}
-
-// sigmoidPrime implements the derivative
-// of the sigmoid function for backpropagation.
-func sigmoidPrime(x float64) float64 {
-	return x * (1.0 - x)
-}
 
 // neuralNet contains all of the information
 // that defines a trained neural network.
@@ -89,10 +46,11 @@ func newNetwork(config neuralNetConfig) *neuralNet {
 
 // Create and Init weights and biases parameters
 func initParameters(nn *neuralNet) ([]float64, []float64, []float64, []float64) {
+	// Creating a seed for random generation
 	randSource := rand.NewSource(time.Now().UnixNano())
 	randGen := rand.New(randSource)
 
-	// Use random initialization for the weight matrices & biases
+	// Use random initialization for the weights & biases
 	wHiddenRaw := make([]float64, nn.config.hiddenNeurons*nn.config.inputNeurons)
 	bHiddenRaw := make([]float64, nn.config.hiddenNeurons)
 	wOutRaw := make([]float64, nn.config.outputNeurons*nn.config.hiddenNeurons)
@@ -108,7 +66,7 @@ func initParameters(nn *neuralNet) ([]float64, []float64, []float64, []float64) 
 }
 
 // This function trains a neural network
-func (nn *neuralNet) train(x, y *mat.Dense) error {
+func (nn *neuralNet) Train(x, y *mat.Dense) error {
 
 	// Random Init of weights & biases
 	wHiddenRaw, bHiddenRaw, wOutRaw, bOutRaw := initParameters(nn)
@@ -123,7 +81,7 @@ func (nn *neuralNet) train(x, y *mat.Dense) error {
 	var output mat.Dense
 
 	// Loop over the number of epochs utilizing
-	// backpropagation to train the model.
+	// backpropagation to Train the model.
 	for i := 0; i < nn.config.numEpochs; i++ {
 
 		// forward process.
@@ -133,7 +91,7 @@ func (nn *neuralNet) train(x, y *mat.Dense) error {
 		hiddenLayerInput.Apply(addBHidden, &hiddenLayerInput)
 
 		var hiddenLayerActivations mat.Dense
-		applySigmoid := func(_, _ int, v float64) float64 { return sigmoid(v) }
+		applySigmoid := func(_, _ int, v float64) float64 { return functions.Sigmoid(v) }
 		hiddenLayerActivations.Apply(applySigmoid, &hiddenLayerInput)
 
 		var outputLayerInput mat.Dense
@@ -147,7 +105,7 @@ func (nn *neuralNet) train(x, y *mat.Dense) error {
 		networkError.Sub(y, &output)
 
 		var slopeOutputLayer mat.Dense
-		applySigmoidPrime := func(_, _ int, v float64) float64 { return sigmoidPrime(v) }
+		applySigmoidPrime := func(_, _ int, v float64) float64 { return functions.SigmoidPrime(v) }
 		slopeOutputLayer.Apply(applySigmoidPrime, &output)
 		var slopeHiddenLayer mat.Dense
 		slopeHiddenLayer.Apply(applySigmoidPrime, &hiddenLayerActivations)
@@ -166,7 +124,7 @@ func (nn *neuralNet) train(x, y *mat.Dense) error {
 		wOutAdj.Scale(nn.config.learningRate, &wOutAdj)
 		wOut.Add(wOut, &wOutAdj)
 
-		bOutAdj, err := sumAlongAxis(0, &dOutput)
+		bOutAdj, err := functions.SumAlongAxis(0, &dOutput)
 		if err != nil {
 			return err
 		}
@@ -178,7 +136,7 @@ func (nn *neuralNet) train(x, y *mat.Dense) error {
 		wHiddenAdj.Scale(nn.config.learningRate, &wHiddenAdj)
 		wHidden.Add(wHidden, &wHiddenAdj)
 
-		bHiddenAdj, err := sumAlongAxis(0, &dHiddenLayer)
+		bHiddenAdj, err := functions.SumAlongAxis(0, &dHiddenLayer)
 		if err != nil {
 			return err
 		}
@@ -194,10 +152,10 @@ func (nn *neuralNet) train(x, y *mat.Dense) error {
 	return nil
 }
 
-// This function calls train(x,y)
+// This function calls Train(x,y).
 // Train the neural network
-// and save the hyperparameters in a .json
-func trainModel() error {
+// and save hyperparameters and weights/biases in a .json
+func TrainModel() error {
 	file, err := os.Open("train_data.csv")
 
 	if err != nil {
@@ -205,8 +163,10 @@ func trainModel() error {
 	}
 	defer file.Close()
 
+	// Getting data from file
 	trainingData, yClasses, nWords, nClasses, wordsBag, classesBag := pre.GetProcessedData(file)
 
+	// Settings variables with the matrices
 	inputsData := make([]float64, nWords*len(trainingData))
 	classesData := make([]float64, nClasses*len(yClasses))
 
@@ -240,15 +200,16 @@ func trainModel() error {
 		outputNeurons: nClasses,
 		hiddenNeurons: nClasses,
 		numEpochs:     5000,
-		learningRate:  0.1,
+		learningRate:  0.07,
 	}
 
 	// // Train the neural network.
 	network := newNetwork(config)
-	if err := network.train(inputs, classes); err != nil {
+	if err := network.Train(inputs, classes); err != nil {
 		log.Fatal(err)
 	}
 
+	// Model with hyperparams, weights/biases
 	modelInfo := ModelInfo{
 		Config:   ConfigInfo{network.config.inputNeurons, network.config.outputNeurons, network.config.hiddenNeurons, network.config.numEpochs, network.config.learningRate},
 		NWords:   nWords,
@@ -307,28 +268,24 @@ type ConfigInfo struct {
 	LearningRate  float64 `json:"learningRate"`
 }
 
-// PredictionData includes the data necessary to make
-// a prediction and encodes the output prediction.
-
-// predict evaluates the model
-// this function gets a prediction for an input
+// This function gets a prediction for an input.
 func (nn *neuralNet) predict(x *mat.Dense) (*mat.Dense, error) {
 	// Check to make sure that the neuralNet value
 	// represents a trained model.
 	if nn.wHidden == nil || nn.wOut == nil || nn.bHidden == nil || nn.bOut == nil {
-		return nil, errors.New("The neural net weights and biases are empty")
+		return nil, errors.New("The neural network's weights and biases are empty")
 	}
 
 	// Defining the output of the neural network.
 	var output mat.Dense
-	// Feed forward process.
+	// Forward process.
 	var hiddenLayerInput mat.Dense
 	hiddenLayerInput.Mul(x, nn.wHidden)
 	addBHidden := func(_, col int, v float64) float64 { return v + nn.bHidden.At(0, col) }
 	hiddenLayerInput.Apply(addBHidden, &hiddenLayerInput)
 
 	var hiddenLayerActivations mat.Dense
-	applySigmoid := func(_, _ int, v float64) float64 { return sigmoid(v) }
+	applySigmoid := func(_, _ int, v float64) float64 { return functions.Sigmoid(v) }
 	hiddenLayerActivations.Apply(applySigmoid, &hiddenLayerInput)
 
 	var outputLayerInput mat.Dense
@@ -419,15 +376,12 @@ func (nn *neuralNet) testModel(nWords, nClasses int) {
 
 }
 
-func Predict(sentence string) string {
-	// Declare the input and output directory flags.
-	// inModelDirPtr := flag.String("inModelDir", "", "The directory containing the model.")
-	// fmt.Println("inModelDirPtr", &inModelDirPtr)
+// This function takes a string,
+// we'll pass the value to predict(string)
+// to get a prediction for that sentence
+func Predict(sentence string) (string, error) {
 
-	// Parse the command line flags.
-	// flag.Parse()
-
-	// Load the model file.
+	// Loading the model file where we have the model information.
 	f, err := ioutil.ReadFile(filepath.Join("model.json"))
 	if err != nil {
 		log.Fatal(err)
@@ -439,10 +393,10 @@ func Predict(sentence string) string {
 		log.Fatal(err)
 	}
 
+	// This variable has the bagOfWords with training words
 	bagOfWords := modelInfo.Words
 
-	// // Define our network architecture and
-	// // learning parameters.
+	// Setting the variable with neural network data
 	config := neuralNetConfig{
 		inputNeurons:  modelInfo.NWords,
 		outputNeurons: modelInfo.NClasses,
@@ -451,13 +405,13 @@ func Predict(sentence string) string {
 		learningRate:  modelInfo.Config.LearningRate,
 	}
 
-	// Form the matrices.
+	// Making the matrices.
 	wHidden := mat.NewDense(modelInfo.Config.InputNeurons, modelInfo.Config.HiddenNeurons, modelInfo.WHidden)
 	bHidden := mat.NewDense(1, modelInfo.Config.HiddenNeurons, modelInfo.BHidden)
 	wOut := mat.NewDense(modelInfo.Config.HiddenNeurons, modelInfo.Config.OutputNeurons, modelInfo.WOut)
 	bOut := mat.NewDense(1, modelInfo.Config.OutputNeurons, modelInfo.BOut)
 
-	// // Train the neural network.
+	// Training the neural network.
 	network := newNetwork(config)
 	network.wHidden = wHidden
 	network.bHidden = bHidden
@@ -467,6 +421,7 @@ func Predict(sentence string) string {
 	// Filling inputsData with training values
 	processedSentence := pre.GetTestProcessedData(sentence, bagOfWords)
 
+	// Here we have the matrix of our sentence
 	sentenceMatrix := mat.NewDense(1, modelInfo.NWords, processedSentence)
 
 	res, err := network.predict(sentenceMatrix)
@@ -474,8 +429,7 @@ func Predict(sentence string) string {
 		log.Fatalf("failed to open: %v", err)
 	}
 
-	// maxElement := floats.Max(mat.Row(nil, 0, res))
-
+	// This index is the element with max probability
 	var chosenIndex int
 
 	for i := 0; i < modelInfo.NClasses; i++ {
@@ -484,12 +438,8 @@ func Predict(sentence string) string {
 		}
 	}
 
+	// Here we have the chosen predicted class for the sentence
 	chosenClass := modelInfo.Classes[chosenIndex]
 
-	return chosenClass
-}
-
-func main() {
-	resp := Predict("me gustaria ordenar un refresco")
-	fmt.Println("resp", resp)
+	return chosenClass, nil
 }
