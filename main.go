@@ -5,7 +5,6 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/rs/cors"
 )
 
 func main() {
@@ -17,9 +16,8 @@ func main() {
 	r.Use(middleware.Recoverer)
 
 	r.Mount("/v1/predictions", predictionsResource{}.Routes())
-	handler := cors.Default().Handler(r)
 
-	http.ListenAndServe("0.0.0.0:3000", handler)
+	http.ListenAndServe("0.0.0.0:3000", r)
 }
 
 // func main() {
