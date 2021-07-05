@@ -93,6 +93,12 @@ Method: POST
 Endpoint: /v1/predictions
 ```
 
+**Note.** You can make a request to the following URL.
+
+```
+https://gopher.fabricioism.com/v1/predictions
+```
+
 You must send the following body of the request payload:
 
 ```
