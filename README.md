@@ -116,8 +116,10 @@ Status: 200
 I have put the image in docker so that you can quickly run your service and connect from your web application. I leave you here the docker commands. 🐳
 
 ```
-docker push fabricioism/go-nn-text-classification:v7
+docker push fabricioism/go-nn-text-classification:tagname
 ```
+
+Follow this [link](https://hub.docker.com/repository/docker/fabricioism/go-nn-text-classification)
 
 ## Further work
 
