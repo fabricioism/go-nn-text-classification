@@ -28,7 +28,7 @@ gonum     ->  https://pkg.go.dev/gonum.org/v1/gonum
 
 ## Motivation
 
-Our task is to develop a bot with which people can communicate, the logic of the business is oriented to a service of taking requests from the clients of the Los Gophers Hermanos restaurant (Play on words of Gopher the mascot of Go and Los Pollos Hermanos from Breaking Bad).
+Our task is to develop a bot with which people can communicate, the logic of the business is oriented to a service of taking requests from the clients of  **Los Gophers Hermanos restaurant** (This is a Pun of Gopher the mascot of Go and Los Pollos Hermanos from Breaking Bad 😅 _Say my name_).
 
 You can access the repository of the web application where we use this repo by clicking [here](https://github.com/fabricioism/gopher-hermanos-chat).
 
