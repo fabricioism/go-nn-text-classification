@@ -24,6 +24,7 @@ gonum     ->  https://pkg.go.dev/gonum.org/v1/gonum
    - [Testing](#testing)
 3. [Routing](#routing)
 4. [deployment](#deployment)
+5. [Further work](#further-work)
 
 ## Motivation
 
@@ -109,3 +110,25 @@ Status: 200
   "prediction": "(food,order,pizza)"
 }
 ```
+
+## Deployment
+
+I have put the image in docker so that you can quickly run your service and connect from your web application. I leave you here the docker commands. 🐳
+
+```
+docker push fabricioism/go-nn-text-classification:v7
+```
+
+## Further work
+
+I think the performance could improve a lot if we do a deeper work on the processing, specifically on using the roots of the words. For example, the words "having" and "have" could be reduced to their stem "hav". This is one of the approaches that NLP does.
+
+If you want to know more about Stemming click [here](https://nlp.stanford.edu/IR-book/html/htmledition/stemming-and-lemmatization-1.html)
+
+In particular I am interested in applying Porter's algorithm. Make its equivalent for sentences in Spanish.
+
+You can read more about Porter's Algorithm [here](http://facweb.cs.depaul.edu/mobasher/classes/csc575/papers/porter-algorithm.html)
+
+I hope this whole project will help you. If you have feedback for improvement let me know, it's good to know the opinion of others.
+
+Take care and do not drink while driving.
