@@ -1,8 +1,10 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
+	net "github.com/fabricioism/go-text-classification/net/processing"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
@@ -20,9 +22,9 @@ func main() {
 	http.ListenAndServe("0.0.0.0:3000", r)
 }
 
-// func main() {
-// 	err := net.TrainModel()
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// }
+func train() {
+	err := net.TrainModel()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
