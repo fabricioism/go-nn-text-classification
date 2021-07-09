@@ -21,7 +21,7 @@ gonum     ->  https://pkg.go.dev/gonum.org/v1/gonum
    - [Architecture](#architecture)
    - [Preprocessing](#preprocessing)
    - [Training](#training)
-   - [Testing](#testing)
+   - [Results](#results)
 3. [Routing](#routing)
 4. [deployment](#deployment)
 5. [Further work](#further-work)
@@ -83,6 +83,12 @@ Then, in a matrix we are going to locate each training instance.
 #### Activation functions
 
 For our hidden layer we are going to use the ReLU function as a function. And for the output layer we will make use of the Sigmoid activation function.
+
+
+### Results
+Here we have the confusion matrix
+
+![classes](./assets/confussion-matrix.jpg)
 
 ## Routing
 
